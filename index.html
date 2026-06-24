@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Galen Coder 的个人主页，记录编程、项目与软件工程实践。">
+    <meta name="theme-color" content="#061016">
+    <meta property="og:title" content="Galen Coder">
+    <meta property="og:description" content="Code. Ship. Learn. I build thoughtful software from clean ideas.">
+    <meta property="og:type" content="website">
+    <title>Galen Coder | Personal Homepage</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="assets/hero-workbench.png" as="image">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="Galen Coder home">
+        <span class="prompt-mark" aria-hidden="true">&gt;_</span>
+        <span>galen-coder</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="sr-only">Toggle navigation</span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+      <nav id="site-nav" class="site-nav">
+        <a href="#work">Selected Work</a>
+        <a href="#stack">Stack</a>
+        <a href="#notes">Notes</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section id="top" class="hero" aria-labelledby="hero-title">
+        <div class="hero-backdrop" aria-hidden="true">
+          <img src="assets/hero-workbench.png" alt="">
+        </div>
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <p class="terminal-line" aria-hidden="true">~/projects/galen-coder <span>main</span> git status</p>
+            <h1 id="hero-title">Galen Coder</h1>
+            <p class="hero-kicker">Code. Ship. Learn.</p>
+            <p class="hero-intro">I build thoughtful software from clean ideas.</p>
+            <div class="hero-actions" aria-label="Primary links">
+              <a class="button primary" href="#work">
+                <span aria-hidden="true">&gt;_</span>
+                View Projects
+              </a>
+              <a class="button secondary" href="https://github.com/galen-coder" rel="me">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M12 2.2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.2-3.37-1.2-.45-1.16-1.1-1.47-1.1-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.04 1.53 1.04.89 1.52 2.34 1.08 2.9.83.1-.65.35-1.08.64-1.33-2.22-.25-4.56-1.1-4.56-4.93 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02A9.5 9.5 0 0 1 12 6.2c.85 0 1.7.11 2.5.34 1.9-1.29 2.74-1.02 2.74-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.83-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.76c0 .27.18.58.69.48A10 10 0 0 0 12 2.2Z"></path>
+                </svg>
+                GitHub
+              </a>
+            </div>
+          </div>
+
+          <aside class="code-panel" aria-label="Current focus">
+            <div class="panel-top">
+              <span></span>
+              <span></span>
+              <span></span>
+              <strong>deploy.ts</strong>
+            </div>
+            <pre><code><span class="muted">const</span> craft = {
+  idea: "clean",
+  stack: ["web", "tools", "automation"],
+  loop() {
+    return build()
+      .then(test)
+      .then(ship)
+      .then(learn)
+  }
+}</code></pre>
+          </aside>
+        </div>
+      </section>
+
+      <section id="work" class="section work-section" aria-labelledby="work-title">
+        <div class="section-heading">
+          <p class="section-command" aria-hidden="true">&gt; git log --oneline --graph</p>
+          <h2 id="work-title">Selected Work</h2>
+          <a href="https://github.com/galen-coder?tab=repositories">View all projects on GitHub</a>
+        </div>
+        <div class="project-list">
+          <article class="project-row">
+            <div class="project-icon terminal" aria-hidden="true">&gt;_</div>
+            <div>
+              <h3>CLI Experiments</h3>
+              <p>Small command-line tools, workflow helpers, and scripts that turn repeated work into one good command.</p>
+            </div>
+            <ul class="tag-list" aria-label="Technologies">
+              <li>Node.js</li>
+              <li>Shell</li>
+              <li>Git</li>
+            </ul>
+          </article>
+          <article class="project-row">
+            <div class="project-icon window" aria-hidden="true"></div>
+            <div>
+              <h3>Web Interfaces</h3>
+              <p>Responsive frontends with clear information architecture, fast loading, and careful interaction details.</p>
+            </div>
+            <ul class="tag-list" aria-label="Technologies">
+              <li>HTML</li>
+              <li>CSS</li>
+              <li>JavaScript</li>
+            </ul>
+          </article>
+          <article class="project-row">
+            <div class="project-icon route" aria-hidden="true"></div>
+            <div>
+              <h3>Systems Notes</h3>
+              <p>Learning notes and practical writeups about software design, debugging, deployment, and engineering taste.</p>
+            </div>
+            <ul class="tag-list" aria-label="Topics">
+              <li>Design</li>
+              <li>Debugging</li>
+              <li>Deploy</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="stack" class="section stack-section" aria-labelledby="stack-title">
+        <div class="section-heading compact">
+          <p class="section-command" aria-hidden="true">&gt; cat stack.json</p>
+          <h2 id="stack-title">Stack</h2>
+        </div>
+        <div class="stack-grid">
+          <article>
+            <h3>Languages</h3>
+            <p>JavaScript, TypeScript, Python, SQL</p>
+          </article>
+          <article>
+            <h3>Frontend</h3>
+            <p>Semantic HTML, modern CSS, responsive UI, accessibility</p>
+          </article>
+          <article>
+            <h3>Backend</h3>
+            <p>APIs, automation, data flow, deployment basics</p>
+          </article>
+          <article>
+            <h3>Tools</h3>
+            <p>Git, GitHub Pages, VS Code, command-line workflows</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="notes" class="section notes-section" aria-labelledby="notes-title">
+        <div>
+          <p class="section-command" aria-hidden="true">&gt; tail -f learning.log</p>
+          <h2 id="notes-title">Notes From The Loop</h2>
+        </div>
+        <div class="note-track">
+          <article>
+            <time datetime="2026-06-24">2026.06</time>
+            <h3>Build small, make it real.</h3>
+            <p>The best projects start as tiny loops: a question, a prototype, a test, a cleaner version.</p>
+          </article>
+          <article>
+            <time datetime="2026-06-24">Now</time>
+            <h3>Good code has a point of view.</h3>
+            <p>Names, boundaries, and defaults all teach the next person how to think with the system.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="contact" class="section contact-section" aria-labelledby="contact-title">
+        <div>
+          <p class="section-command" aria-hidden="true">&gt; open channel</p>
+          <h2 id="contact-title">Contact</h2>
+          <p>Open to interesting projects, collaborations, and conversations about software craft.</p>
+        </div>
+        <div class="contact-links">
+          <a href="https://github.com/galen-coder">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M12 2.2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.2-3.37-1.2-.45-1.16-1.1-1.47-1.1-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.04 1.53 1.04.89 1.52 2.34 1.08 2.9.83.1-.65.35-1.08.64-1.33-2.22-.25-4.56-1.1-4.56-4.93 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02A9.5 9.5 0 0 1 12 6.2c.85 0 1.7.11 2.5.34 1.9-1.29 2.74-1.02 2.74-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.83-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.76c0 .27.18.58.69.48A10 10 0 0 0 12 2.2Z"></path>
+            </svg>
+            github.com/galen-coder
+          </a>
+          <a href="mailto:hello@galen-coder.dev">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M4.8 5.8h14.4c.66 0 1.2.54 1.2 1.2v10c0 .66-.54 1.2-1.2 1.2H4.8c-.66 0-1.2-.54-1.2-1.2V7c0-.66.54-1.2 1.2-1.2Zm.34 1.4 6.2 5.03c.38.31.94.31 1.32 0l6.2-5.03H5.14Zm13.86 9.6V8.67l-5.46 4.43a2.44 2.44 0 0 1-3.08 0L5 8.67v8.13h14Z"></path>
+            </svg>
+            hello@galen-coder.dev
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>© 2026 Galen Coder</span>
+      <a href="#top" aria-label="Back to top">&gt;_</a>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
