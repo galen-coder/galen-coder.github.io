@@ -64,8 +64,49 @@ function parseInput() {
 }
 
 function writeOutput(text) {
-  output.textContent = text;
+  output.innerHTML = text ? highlightJSON(text) : "";
   updateOutputStats(text);
+}
+
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function highlightPlain(segment) {
+  return escapeHtml(segment).replace(/([{}[\],:])/g, '<span class="tok-punct">$1</span>');
+}
+
+function highlightJSON(text) {
+  const pattern = /("(?:\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g;
+  let html = "";
+  let lastIndex = 0;
+  let match;
+
+  while ((match = pattern.exec(text)) !== null) {
+    html += highlightPlain(text.slice(lastIndex, match.index));
+
+    if (match[1] !== undefined) {
+      const isKey = match[2] !== undefined;
+      html += `<span class="${isKey ? "tok-key" : "tok-string"}">${escapeHtml(match[1])}</span>`;
+      if (isKey) {
+        html += highlightPlain(match[2]);
+      }
+    } else if (match[3] !== undefined) {
+      html += `<span class="tok-literal">${match[3]}</span>`;
+    } else {
+      html += `<span class="tok-number">${match[4]}</span>`;
+    }
+
+    lastIndex = pattern.lastIndex;
+  }
+
+  html += highlightPlain(text.slice(lastIndex));
+  return html;
 }
 
 function formatJSON() {
