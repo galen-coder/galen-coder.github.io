@@ -1,6 +1,9 @@
 const input = document.querySelector("#history-input");
 const result = document.querySelector("#result");
 const status = document.querySelector("#status");
+const formattedOutput = document.querySelector("#formatted-output");
+const inputStats = document.querySelector("#input-stats");
+const outputStats = document.querySelector("#output-stats");
 
 const SAMPLE = `[
     StateSnapshot(
@@ -345,6 +348,40 @@ function escapeHtml(text) {
     .replace(/'/g, "&#39;");
 }
 
+function highlightPlain(segment) {
+  return escapeHtml(segment).replace(/([{}()[\],:=])/g, '<span class="py-punct">$1</span>');
+}
+
+function highlightPython(text) {
+  const pattern = /("(?:\\u[a-fA-F0-9]{4}|\\x[a-fA-F0-9]{2}|\\[^ux]|[^\\"])*"|'(?:\\u[a-fA-F0-9]{4}|\\x[a-fA-F0-9]{2}|\\[^ux]|[^\\'])*')|\b(True|False|None)\b|(?<![\w.])-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|\b([A-Za-z_][A-Za-z0-9_]*)(?=\s*\()|\b([A-Za-z_][A-Za-z0-9_]*)(?=\s*=)/g;
+  let html = "";
+  let lastIndex = 0;
+  let match;
+
+  while ((match = pattern.exec(text)) !== null) {
+    html += highlightPlain(text.slice(lastIndex, match.index));
+
+    if (match[1] !== undefined) {
+      const rest = text.slice(pattern.lastIndex);
+      const isKey = /^\s*:/.test(rest);
+      html += `<span class="${isKey ? "py-key" : "py-string"}">${escapeHtml(match[1])}</span>`;
+    } else if (match[2] !== undefined) {
+      html += `<span class="py-literal">${match[2]}</span>`;
+    } else if (match[3] !== undefined) {
+      html += `<span class="py-call">${match[3]}</span>`;
+    } else if (match[4] !== undefined) {
+      html += `<span class="py-key">${match[4]}</span>`;
+    } else {
+      html += `<span class="py-number">${match[0]}</span>`;
+    }
+
+    lastIndex = pattern.lastIndex;
+  }
+
+  html += highlightPlain(text.slice(lastIndex));
+  return html;
+}
+
 function quotePython(value) {
   const escaped = String(value)
     .replace(/\\/g, "\\\\")
@@ -644,9 +681,31 @@ function renderResult(snapshots) {
     <div class="snapshot-list">${snapshots.map((node, index) => renderSnapshot(node, index)).join("")}</div>`;
 }
 
+function updateInputStats() {
+  const value = input.value;
+  inputStats.textContent = value ? `${value.split("\n").length} 行 / ${value.length} 字符` : "0 字符";
+}
+
+function updateOutputStats(text) {
+  outputStats.textContent = text ? `${text.split("\n").length} 行 / ${text.length} 字符` : "";
+}
+
+function writeFormatted(root) {
+  const text = formatPython(root);
+  formattedOutput.innerHTML = highlightPython(text);
+  updateOutputStats(text);
+}
+
+function clearFormatted() {
+  formattedOutput.innerHTML = "";
+  updateOutputStats("");
+}
+
 function runParse() {
   try {
     const root = parseHistory(input.value);
+    writeFormatted(root);
+
     const snapshots = snapshotNodes(root);
     if (snapshots.length) {
       result.innerHTML = renderResult(snapshots);
@@ -657,6 +716,7 @@ function runParse() {
       <pre class="code-block">${escapeHtml(formatPython(root))}</pre>`;
     setStatus("解析完成，但未发现 StateSnapshot", "muted");
   } catch (error) {
+    clearFormatted();
     result.innerHTML = "";
     setStatus(error.message, "error");
   }
@@ -664,17 +724,36 @@ function runParse() {
 
 document.querySelector("#parse").addEventListener("click", runParse);
 
+document.querySelector("#copy").addEventListener("click", async () => {
+  const text = formattedOutput.textContent;
+  if (!text) {
+    setStatus("没有可复制的格式化结果", "error");
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    setStatus("已复制格式化结果");
+  } catch (error) {
+    setStatus("复制失败，请手动选择内容复制", "error");
+  }
+});
+
 document.querySelector("#sample").addEventListener("click", () => {
   input.value = SAMPLE;
+  updateInputStats();
   runParse();
 });
 
 document.querySelector("#clear").addEventListener("click", () => {
   input.value = "";
+  updateInputStats();
+  clearFormatted();
   result.innerHTML = "";
   setStatus("已清空。按 Cmd/Ctrl + Enter 开始解析。", "muted");
   input.focus();
 });
+
+input.addEventListener("input", updateInputStats);
 
 input.addEventListener("keydown", (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
@@ -682,3 +761,5 @@ input.addEventListener("keydown", (event) => {
     runParse();
   }
 });
+
+updateInputStats();
