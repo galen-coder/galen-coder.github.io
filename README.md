@@ -11,7 +11,6 @@ Galen Coder 的 GitHub Pages 站点，提供一组纯浏览器运行的文本处
 | 工具 | 说明 | 状态 |
 | --- | --- | --- |
 | [JSON 格式化](https://galen-coder.github.io/tools/json-format.html) | 美化、压缩、校验 JSON，支持 2/4 空格与 Tab 缩进 | 已实现 |
-| SQL 格式化 | 关键字大小写统一、换行与缩进 | 计划中 |
 | HTML 格式化 | 标签缩进与属性换行 | 计划中 |
 
 ### 编码转换
@@ -26,6 +25,7 @@ Galen Coder 的 GitHub Pages 站点，提供一组纯浏览器运行的文本处
 
 | 工具 | 说明 | 状态 |
 | --- | --- | --- |
+| [LangGraph 历史解析](https://galen-coder.github.io/tools/langgraph-history.html) | 解析 `get_state_history` 的 StateSnapshot / PregelTask / Interrupt 结构 | 已实现 |
 | JSON / YAML 互转 | JSON 与 YAML 结构互转 | 计划中 |
 | CSV 转 JSON | 表格数据转数组对象 | 计划中 |
 | 时间戳转换 | Unix 时间戳与日期互转 | 计划中 |
@@ -47,7 +47,9 @@ Galen Coder 的 GitHub Pages 站点，提供一组纯浏览器运行的文本处
 ├── script.js                  # 主页交互
 ├── tools/
 │   ├── json-format.html       # JSON 格式化工具
-│   └── json-format.js
+│   ├── json-format.js
+│   ├── langgraph-history.html # LangGraph 历史解析工具
+│   └── langgraph-history.js
 ├── assets/
 └── favicon.svg
 ```
