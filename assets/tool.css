@@ -116,6 +116,73 @@
   font-size: 13px;
 }
 
+.editor-toolbar label,
+.tool-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.editor-toolbar select,
+.tool-options select,
+.tool-options input[type="text"] {
+  padding: 4px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.tool-options input[type="text"] {
+  width: 8rem;
+}
+
+.editor-toolbar select:focus-visible,
+.tool-options select:focus-visible,
+.tool-options input:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.tool-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--white);
+}
+
+.tool-options input[type="checkbox"] {
+  accent-color: var(--ink);
+}
+
+.editor-toolbar .file-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--ink);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.editor-toolbar .file-button:hover {
+  background: var(--hover);
+}
+
 .editor-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

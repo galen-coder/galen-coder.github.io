@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="在线 Base64 编解码工具：支持 UTF-8 文本、URL 安全模式与文件转 Base64，全部在浏览器本地完成。">
+    <meta name="theme-color" content="#f7f6f3">
+    <meta property="og:title" content="Base64 编解码 | Galen Coder Text Tools">
+    <meta property="og:description" content="文本与文件的 Base64 互转，数据不上传。">
+    <meta property="og:type" content="website">
+    <title>Base64 编解码 | Galen Coder Text Tools</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../assets/tool.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="tool-header">
+      <a class="brand" href="../index.html">
+        <span class="prompt-mark" aria-hidden="true">&gt;_</span>
+        <span>galen-coder</span>
+      </a>
+      <a class="back-link" href="../index.html#tools">&larr; 返回工具箱</a>
+    </header>
+
+    <main id="main" class="tool-main">
+      <div class="tool-intro">
+        <p class="section-command" aria-hidden="true">&gt; base64 --codec</p>
+        <h1>Base64 编解码</h1>
+        <p>自动识别编码或解码，支持 UTF-8 中文、URL 安全字符与文件转 Base64。全部处理在浏览器本地完成，内容不会上传。</p>
+      </div>
+
+      <section class="editor" aria-label="Base64 编解码">
+        <div class="editor-toolbar">
+          <div class="toolbar-actions">
+            <label>
+              模式
+              <select id="mode">
+                <option value="auto">自动识别</option>
+                <option value="encode">编码</option>
+                <option value="decode">解码</option>
+              </select>
+            </label>
+            <label><input id="url-safe" type="checkbox"> URL 安全</label>
+            <label class="button secondary file-button">
+              文件转 Base64
+              <input id="file" type="file" hidden>
+            </label>
+          </div>
+          <div class="toolbar-actions">
+            <button id="run" class="button primary" type="button">执行</button>
+            <button id="sample" class="button secondary" type="button">示例</button>
+            <button id="clear" class="button secondary" type="button">清空</button>
+          </div>
+        </div>
+
+        <div class="editor-grid">
+          <div class="pane">
+            <div class="pane-head">
+              <span>输入</span>
+              <span id="input-stats">0 字符</span>
+            </div>
+            <label class="sr-only" for="tool-input">输入文本或 Base64</label>
+            <textarea id="tool-input" class="pane-field" spellcheck="false" placeholder="粘贴原始文本或 Base64"></textarea>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span>输出</span>
+              <span class="pane-actions">
+                <span id="output-stats"></span>
+                <button id="copy" type="button">复制</button>
+              </span>
+            </div>
+            <pre id="tool-output" class="pane-code" data-placeholder="结果会显示在这里" tabindex="0"></pre>
+          </div>
+        </div>
+
+        <p id="status" class="status" data-tone="muted" role="status" aria-live="polite">输入文本自动识别编码或解码，也可以选择文件转为 Base64。</p>
+      </section>
+    </main>
+
+    <script src="../assets/tool.js"></script>
+    <script src="base64.js"></script>
+  </body>
+</html>

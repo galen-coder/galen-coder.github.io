@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="在线大小写转换工具：全大写、全小写、句首大写、标题格式、驼峰、帕斯卡、下划线、短横线与常量命名，全部在浏览器本地完成。">
+    <meta name="theme-color" content="#f7f6f3">
+    <meta property="og:title" content="大小写转换 | Galen Coder Text Tools">
+    <meta property="og:description" content="驼峰、下划线、短横线等命名转换，数据不上传。">
+    <meta property="og:type" content="website">
+    <title>大小写转换 | Galen Coder Text Tools</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../assets/tool.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="tool-header">
+      <a class="brand" href="../index.html">
+        <span class="prompt-mark" aria-hidden="true">&gt;_</span>
+        <span>galen-coder</span>
+      </a>
+      <a class="back-link" href="../index.html#tools">&larr; 返回工具箱</a>
+    </header>
+
+    <main id="main" class="tool-main">
+      <div class="tool-intro">
+        <p class="section-command" aria-hidden="true">&gt; case --convert</p>
+        <h1>大小写转换</h1>
+        <p>在大小写、句首、标题格式与 camelCase、PascalCase、snake_case、kebab-case 之间转换。多行文本会逐行处理，全部在浏览器本地完成。</p>
+      </div>
+
+      <section class="editor" aria-label="大小写转换">
+        <div class="editor-toolbar">
+          <label>
+            转换方式
+            <select id="mode">
+              <option value="camel">camelCase</option>
+              <option value="pascal">PascalCase</option>
+              <option value="snake">snake_case</option>
+              <option value="kebab">kebab-case</option>
+              <option value="constant">CONSTANT_CASE</option>
+              <option value="upper">全部大写</option>
+              <option value="lower">全部小写</option>
+              <option value="sentence">句首大写</option>
+              <option value="title">每词首字母大写</option>
+            </select>
+          </label>
+          <div class="toolbar-actions">
+            <button id="run" class="button primary" type="button">执行</button>
+            <button id="sample" class="button secondary" type="button">示例</button>
+            <button id="clear" class="button secondary" type="button">清空</button>
+          </div>
+        </div>
+
+        <div class="editor-grid">
+          <div class="pane">
+            <div class="pane-head">
+              <span>输入</span>
+              <span id="input-stats">0 字符</span>
+            </div>
+            <label class="sr-only" for="tool-input">输入文本</label>
+            <textarea id="tool-input" class="pane-field" spellcheck="false" placeholder="每行一段内容，逐行转换"></textarea>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span>输出</span>
+              <span class="pane-actions">
+                <span id="output-stats"></span>
+                <button id="copy" type="button">复制</button>
+              </span>
+            </div>
+            <pre id="tool-output" class="pane-code" data-placeholder="转换结果会显示在这里" tabindex="0"></pre>
+          </div>
+        </div>
+
+        <p id="status" class="status" data-tone="muted" role="status" aria-live="polite">输入内容后自动转换。</p>
+      </section>
+    </main>
+
+    <script src="../assets/tool.js"></script>
+    <script src="case-convert.js"></script>
+  </body>
+</html>

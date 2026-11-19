@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="在线行处理工具：按行去重、排序、反转、去空行、加行号与前后缀，实时统计行数，全部在浏览器本地完成。">
+    <meta name="theme-color" content="#f7f6f3">
+    <meta property="og:title" content="行处理 | Galen Coder Text Tools">
+    <meta property="og:description" content="按行去重、排序、反转与编号，数据不上传。">
+    <meta property="og:type" content="website">
+    <title>行处理 | Galen Coder Text Tools</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../assets/tool.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="tool-header">
+      <a class="brand" href="../index.html">
+        <span class="prompt-mark" aria-hidden="true">&gt;_</span>
+        <span>galen-coder</span>
+      </a>
+      <a class="back-link" href="../index.html#tools">&larr; 返回工具箱</a>
+    </header>
+
+    <main id="main" class="tool-main">
+      <div class="tool-intro">
+        <p class="section-command" aria-hidden="true">&gt; lines --clean</p>
+        <h1>行处理</h1>
+        <p>按行去空行、去重、排序、反转、打乱，再添加行号或前后缀。选项变化会实时重新处理，全部在浏览器本地完成。</p>
+      </div>
+
+      <section class="editor" aria-label="行处理">
+        <div class="editor-toolbar">
+          <span class="toolbar-hint">选项按固定顺序执行</span>
+          <div class="toolbar-actions">
+            <button id="run" class="button primary" type="button">执行</button>
+            <button id="sample" class="button secondary" type="button">示例</button>
+            <button id="clear" class="button secondary" type="button">清空</button>
+          </div>
+        </div>
+
+        <div class="tool-options">
+          <label><input id="remove-empty" type="checkbox" checked> 去空行</label>
+          <label><input id="dedupe" type="checkbox" checked> 去重</label>
+          <label>
+            排序
+            <select id="sort">
+              <option value="none">保持原序</option>
+              <option value="asc">升序</option>
+              <option value="desc">降序</option>
+            </select>
+          </label>
+          <label><input id="reverse" type="checkbox"> 反转顺序</label>
+          <label><input id="shuffle" type="checkbox"> 打乱顺序</label>
+          <label><input id="number" type="checkbox"> 添加行号</label>
+          <label>前缀 <input id="prefix" type="text" placeholder="无" autocomplete="off"></label>
+          <label>后缀 <input id="suffix" type="text" placeholder="无" autocomplete="off"></label>
+        </div>
+
+        <div class="editor-grid">
+          <div class="pane">
+            <div class="pane-head">
+              <span>输入</span>
+              <span id="input-stats">0 字符</span>
+            </div>
+            <label class="sr-only" for="tool-input">输入多行文本</label>
+            <textarea id="tool-input" class="pane-field" spellcheck="false" placeholder="每行一条内容"></textarea>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span>输出</span>
+              <span class="pane-actions">
+                <span id="output-stats"></span>
+                <button id="copy" type="button">复制</button>
+              </span>
+            </div>
+            <pre id="tool-output" class="pane-code" data-placeholder="处理结果会显示在这里" tabindex="0"></pre>
+          </div>
+        </div>
+
+        <p id="status" class="status" data-tone="muted" role="status" aria-live="polite">输入内容后自动处理。</p>
+      </section>
+    </main>
+
+    <script src="../assets/tool.js"></script>
+    <script src="line-tools.js"></script>
+  </body>
+</html>
