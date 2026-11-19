@@ -353,7 +353,7 @@
       .flow-node {
         display: grid;
         gap: 0.3rem;
-        width: 13.5rem;
+        width: 15.5rem;
         padding: 0.75rem 0.8rem;
         border: 1px solid var(--line);
         border-radius: 10px;
@@ -394,16 +394,73 @@
       }
 
       .flow-node-values {
-        display: -webkit-box;
+        display: grid;
+        gap: 0.16rem;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        line-height: 1.45;
+      }
+
+      .flow-node-kv {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 0.4rem;
+      }
+
+      .flow-node-key {
+        color: var(--faint);
+      }
+
+      .flow-node-key::after {
+        content: "=";
+      }
+
+      .flow-node-val {
         overflow: hidden;
         color: var(--text);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .flow-node-empty {
+        color: var(--faint);
         font-family: var(--mono);
-        font-size: 0.74rem;
-        font-weight: 500;
-        line-height: 1.55;
-        overflow-wrap: anywhere;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
+        font-size: 0.72rem;
+      }
+
+      .flow-node-next {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.3rem;
+        font-family: var(--mono);
+        font-size: 0.68rem;
+      }
+
+      .flow-node-label {
+        color: var(--faint);
+      }
+
+      .flow-node-next .chip {
+        padding: 0.05rem 0.3rem;
+        font-size: 0.66rem;
+      }
+
+      .flow-node-end {
+        color: var(--faint);
+      }
+
+      .flow-node-task {
+        overflow: hidden;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .flow-node-task.is-error {
+        color: #b42318;
       }
 
       .flow-node-meta {
@@ -699,11 +756,11 @@
     <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="tool-header">
-      <a class="brand" href="../index.html">
+      <a class="brand" href="../index.html" target="_blank" rel="noopener">
         <span class="prompt-mark" aria-hidden="true">&gt;_</span>
         <span>galen-coder</span>
       </a>
-      <a class="back-link" href="../index.html#tools">&larr; 返回工具箱</a>
+      <a class="back-link" href="../index.html#tools" target="_blank" rel="noopener">&larr; 返回工具箱</a>
     </header>
 
     <main id="main" class="tool-main">
@@ -713,7 +770,7 @@
         <p>
           粘贴 <code>graph.get_state_history(config)</code> 的打印结果，按快照结构拆解 values、next、tasks 与 metadata。
           字段含义参考
-          <a class="doc-link" href="https://langchain-ai.github.io/langgraph/reference/graphs/#langgraph.graph.state.StateSnapshot" target="_blank" rel="noreferrer">StateSnapshot 官方文档</a>。
+          <a class="doc-link" href="https://langchain-ai.github.io/langgraph/reference/graphs/#langgraph.graph.state.StateSnapshot" target="_blank" rel="noopener noreferrer">StateSnapshot 官方文档</a>。
           解析全部在浏览器本地完成。
         </p>
       </div>

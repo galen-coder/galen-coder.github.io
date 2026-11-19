@@ -518,6 +518,10 @@ function shortId(value) {
   return value && value.length > 10 ? `${value.slice(0, 8)}…` : value;
 }
 
+function shortCheckpoint(value) {
+  return value && value.length > 12 ? `…${value.slice(-8)}` : value;
+}
+
 function renderInline(node) {
   if (!node) {
     return '<span class="empty">无</span>';
@@ -684,37 +688,80 @@ function buildItems(snapshots) {
       source: scalar(dictValue(metadata, "source")) ?? "unknown",
       step: scalar(dictValue(metadata, "step")),
       createdAt: scalar(getKwarg(node, "created_at")) ?? "",
-      valuesText: valuesPreview(getKwarg(node, "values")),
-      nextText: nextPreview(getKwarg(node, "next")),
+      values: valuesEntries(getKwarg(node, "values")),
+      next: nextItems(getKwarg(node, "next")),
+      task: taskPreview(getKwarg(node, "tasks")),
+      checkpoint: shortCheckpoint(scalar(dictValue(configurable, "checkpoint_id")) ?? ""),
     };
   });
 }
 
-function valuesPreview(node) {
-  if (!node) {
-    return "无 values";
-  }
-  if (node.type === "dict" && !node.entries.length) {
-    return "{}";
-  }
+function compactNode(node) {
   return formatPython(node).replace(/\s+/g, " ").trim();
 }
 
-function nextPreview(node) {
-  const items = node && ["tuple", "list"].includes(node.type) ? node.items.map(scalar).filter((value) => value !== undefined) : [];
-  return items.length ? `next: ${items.join(" → ")}` : "next: 结束";
+function valuesEntries(node) {
+  if (!node || node.type !== "dict" || !node.entries.length) {
+    return [];
+  }
+  return node.entries.slice(0, 4).map((entry) => ({
+    key: entry.key,
+    value: compactNode(entry.value),
+  }));
+}
+
+function nextItems(node) {
+  return node && ["tuple", "list"].includes(node.type) ? node.items.map(scalar).filter((value) => value !== undefined) : [];
+}
+
+function taskPreview(node) {
+  if (!node || !["tuple", "list"].includes(node.type) || !node.items.length) {
+    return null;
+  }
+  const task = node.items[0];
+  if (!task || task.type !== "call") {
+    return { name: "task", detail: compactNode(task), error: false, extra: 0 };
+  }
+  const error = getKwarg(task, "error");
+  const result = getKwarg(task, "result");
+  const hasError = Boolean(error && error.type !== "none");
+  return {
+    name: scalar(getKwarg(task, "name")) ?? task.name,
+    detail: hasError ? compactNode(error) : result ? compactNode(result) : "",
+    error: hasError,
+    extra: node.items.length - 1,
+  };
 }
 
 function renderFlowNode(item) {
   const sourceClass = `source-${String(item.source).replace(/[^a-z]/gi, "").toLowerCase()}`;
   const time = item.createdAt ? item.createdAt.slice(11, 19) : "";
+  const valuesHtml = item.values.length
+    ? item.values
+        .map(
+          (entry) =>
+            `<span class="flow-node-kv"><span class="flow-node-key">${escapeHtml(entry.key)}</span><span class="flow-node-val">${escapeHtml(entry.value)}</span></span>`
+        )
+        .join("")
+    : '<span class="flow-node-empty">空状态</span>';
+  const nextHtml = item.next.length
+    ? item.next.map((target) => `<span class="chip">${escapeHtml(target)}</span>`).join("")
+    : '<span class="flow-node-end">结束</span>';
+  const taskHtml = item.task
+    ? `<span class="flow-node-task${item.task.error ? " is-error" : ""}" title="${escapeHtml(item.task.detail)}">task ${escapeHtml(item.task.name)}${
+        item.task.detail ? ` → ${escapeHtml(item.task.detail)}` : ""
+      }${item.task.extra ? ` +${item.task.extra}` : ""}</span>`
+    : "";
+
   return `<button class="flow-node" type="button" data-id="${escapeHtml(item.id)}" aria-pressed="false">
       <span class="flow-node-top">
         <span class="badge ${sourceClass}">${escapeHtml(item.source)}</span>
         <span class="flow-node-step">${item.step === undefined ? "step ?" : `step ${escapeHtml(item.step)}`}</span>
       </span>
-      <strong class="flow-node-values">${escapeHtml(item.valuesText)}</strong>
-      <span class="flow-node-meta">${escapeHtml(time)} · ${escapeHtml(item.nextText)}</span>
+      <span class="flow-node-values">${valuesHtml}</span>
+      <span class="flow-node-next"><span class="flow-node-label">next</span>${nextHtml}</span>
+      ${taskHtml}
+      <span class="flow-node-meta">${escapeHtml(time)} · ${escapeHtml(item.checkpoint)}</span>
     </button>`;
 }
 
