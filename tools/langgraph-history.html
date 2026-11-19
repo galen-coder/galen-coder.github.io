@@ -630,6 +630,66 @@
           gap: 2px;
         }
       }
+      .view-switch {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      .view-switch button {
+        padding: 2px 8px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        color: var(--muted);
+        font-family: var(--sans);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1.4;
+      }
+
+      .view-switch button + button {
+        border-left: 1px solid var(--hairline);
+      }
+
+      .view-switch button:hover,
+      .view-switch button[aria-pressed="true"] {
+        background: var(--hover);
+        color: var(--ink);
+      }
+
+      .view-switch button:focus-visible {
+        outline: 2px solid var(--link);
+        outline-offset: -2px;
+      }
+
+      .rich-guide {
+        color: #c9c6c1;
+        white-space: pre;
+      }
+
+      .rich-index,
+      .rich-type {
+        color: var(--muted);
+      }
+
+      .rich-type {
+        margin-left: 4px;
+        font-size: 11px;
+        letter-spacing: 0.01em;
+      }
+
+      .py-name {
+        color: var(--ink);
+      }
+
+      @media (max-width: 640px) {
+        #output-stats {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
@@ -677,6 +737,10 @@
               <span>格式化结果</span>
               <span class="pane-actions">
                 <span id="output-stats"></span>
+                <span class="view-switch" role="group" aria-label="格式化风格">
+                  <button type="button" data-view="json" aria-pressed="true">JSON</button>
+                  <button type="button" data-view="rich" aria-pressed="false">Rich</button>
+                </span>
                 <button id="copy" type="button">复制</button>
               </span>
             </div>

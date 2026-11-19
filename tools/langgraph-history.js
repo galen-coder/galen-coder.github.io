@@ -9,6 +9,8 @@ const { copyText, describeText, onModEnter } = window.ToolKit;
 
 let selectedId = null;
 let drawEdgesRef = null;
+let formattedRoot = null;
+let viewMode = "json";
 
 const SAMPLE = `[
     StateSnapshot(
@@ -920,13 +922,178 @@ function updateOutputStats(text) {
   outputStats.textContent = describeText(text);
 }
 
+function richChildren(node) {
+  if (!node) {
+    return [];
+  }
+  if (node.type === "dict") {
+    return node.entries.map((entry) => ({
+      keyHtml: `<span class="py-key">${escapeHtml(quotePython(entry.key))}</span>`,
+      sep: ": ",
+      value: entry.value,
+    }));
+  }
+  if (node.type === "list" || node.type === "tuple") {
+    return node.items.map((item, index) => ({
+      keyHtml: `<span class="rich-index">[${index}]</span>`,
+      sep: " ",
+      value: item,
+    }));
+  }
+  if (node.type === "call") {
+    const children = node.args.map((item, index) => ({
+      keyHtml: `<span class="rich-index">[${index}]</span>`,
+      sep: " ",
+      value: item,
+    }));
+    Object.entries(node.kwargs).forEach(([key, value]) => {
+      children.push({
+        keyHtml: `<span class="py-key">${escapeHtml(key)}</span>`,
+        sep: " = ",
+        value,
+      });
+    });
+    return children;
+  }
+  return [];
+}
+
+function richTypeLabel(node) {
+  if (!node) {
+    return "None";
+  }
+  if (node.type === "dict") {
+    return `dict[${node.entries.length}]`;
+  }
+  if (node.type === "list") {
+    return `list[${node.items.length}]`;
+  }
+  if (node.type === "tuple") {
+    return `tuple[${node.items.length}]`;
+  }
+  if (node.type === "call") {
+    return node.name;
+  }
+  return node.type;
+}
+
+function richLeafHtml(node) {
+  if (!node || node.type === "none") {
+    return '<span class="py-literal">None</span>';
+  }
+  switch (node.type) {
+    case "string":
+      return `<span class="py-string">${escapeHtml(quotePython(node.value))}</span>`;
+    case "number":
+      return `<span class="py-number">${escapeHtml(node.value)}</span>`;
+    case "bool":
+      return `<span class="py-literal">${node.value ? "True" : "False"}</span>`;
+    case "name":
+      return `<span class="py-name">${escapeHtml(node.value)}</span>`;
+    case "dict":
+      return '<span class="py-punct">{}</span>';
+    case "list":
+      return '<span class="py-punct">[]</span>';
+    case "tuple":
+      return '<span class="py-punct">()</span>';
+    default:
+      return "";
+  }
+}
+
+function isRichLeaf(node) {
+  if (!node) {
+    return true;
+  }
+  if (["string", "number", "bool", "none", "name"].includes(node.type)) {
+    return true;
+  }
+  if (node.type === "dict") {
+    return node.entries.length === 0;
+  }
+  if (node.type === "list" || node.type === "tuple") {
+    return node.items.length === 0;
+  }
+  return false;
+}
+
+function pushRichNode(lines, node, prefix, isLast, keyHtml, sep) {
+  const guide = `${prefix}${isLast ? "╰─ " : "├─ "}`;
+  if (isRichLeaf(node)) {
+    lines.push({ guide, html: `${keyHtml}${sep}${richLeafHtml(node)}` });
+    return;
+  }
+  if (node.type === "call") {
+    lines.push({ guide, html: `${keyHtml}${sep}<span class="py-call">${escapeHtml(node.name)}</span>` });
+  } else {
+    lines.push({ guide, html: `${keyHtml}${sep}<span class="rich-type">${richTypeLabel(node)}</span>` });
+  }
+  const children = richChildren(node);
+  const nextPrefix = `${prefix}${isLast ? "   " : "│  "}`;
+  children.forEach((child, index) => {
+    pushRichNode(lines, child.value, nextPrefix, index === children.length - 1, child.keyHtml, child.sep);
+  });
+}
+
+function renderRich(root) {
+  if (!root) {
+    return "";
+  }
+  const nodes = root.type === "list" || root.type === "tuple" ? root.items : [root];
+  const lines = [];
+  nodes.forEach((node, index) => {
+    if (index > 0) {
+      lines.push({ guide: "", html: "" });
+    }
+    const indexLabel = `<span class="rich-index">#${index + 1}</span>`;
+    if (node.type === "call") {
+      lines.push({ guide: "", html: `<span class="py-call">${escapeHtml(node.name)}</span> ${indexLabel}` });
+    } else if (isRichLeaf(node)) {
+      lines.push({ guide: "", html: `${richLeafHtml(node)} ${indexLabel}` });
+    } else {
+      lines.push({ guide: "", html: `<span class="rich-type">${richTypeLabel(node)}</span> ${indexLabel}` });
+    }
+    const children = richChildren(node);
+    children.forEach((child, childIndex) => {
+      pushRichNode(lines, child.value, "", childIndex === children.length - 1, child.keyHtml, child.sep);
+    });
+  });
+  return lines
+    .map(
+      (line) =>
+        `<span class="rich-line"><span class="rich-guide">${escapeHtml(line.guide)}</span>${line.html}</span>`
+    )
+    .join("\n");
+}
+
+function setViewMode(mode) {
+  if (mode !== "json" && mode !== "rich") {
+    return;
+  }
+  viewMode = mode;
+  document.querySelectorAll(".view-switch button").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.view === mode));
+  });
+  if (formattedRoot) {
+    writeFormatted(formattedRoot);
+  }
+}
+
 function writeFormatted(root) {
-  const text = formatPython(root);
-  formattedOutput.innerHTML = highlightPython(text);
-  updateOutputStats(text);
+  formattedRoot = root;
+  formattedOutput.classList.toggle("is-rich", viewMode === "rich");
+  if (viewMode === "rich") {
+    formattedOutput.innerHTML = renderRich(root);
+  } else {
+    const text = formatPython(root);
+    formattedOutput.innerHTML = highlightPython(text);
+  }
+  updateOutputStats(formattedOutput.textContent || "");
 }
 
 function clearFormatted() {
+  formattedRoot = null;
+  formattedOutput.classList.remove("is-rich");
   formattedOutput.innerHTML = "";
   updateOutputStats("");
 }
@@ -972,6 +1139,10 @@ document.querySelector("#copy").addEventListener("click", async () => {
   } catch (error) {
     setStatus("复制失败，请手动选择内容复制", "error");
   }
+});
+
+document.querySelectorAll(".view-switch button").forEach((button) => {
+  button.addEventListener("click", () => setViewMode(button.dataset.view));
 });
 
 document.querySelector("#sample").addEventListener("click", () => {
