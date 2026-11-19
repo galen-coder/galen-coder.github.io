@@ -5,6 +5,9 @@ const formattedOutput = document.querySelector("#formatted-output");
 const inputStats = document.querySelector("#input-stats");
 const outputStats = document.querySelector("#output-stats");
 
+let selectedId = null;
+let drawEdgesRef = null;
+
 const SAMPLE = `[
     StateSnapshot(
         values={'num': 1, 'msg': '加1后：1'},
@@ -667,18 +670,196 @@ function snapshotNodes(root) {
   return (nodes || []).filter((node) => node && node.type === "call" && node.name === "StateSnapshot");
 }
 
-function renderResult(snapshots) {
-  const threadIds = [...new Set(snapshots.map((node) => scalar(dictValue(dictValue(getKwarg(node, "config"), "configurable"), "thread_id"))).filter(Boolean))];
-  const sources = [...new Set(snapshots.map((node) => scalar(dictValue(getKwarg(node, "metadata"), "source")) ?? "unknown"))];
+function buildItems(snapshots) {
+  return snapshots.map((node, index) => {
+    const configurable = dictValue(getKwarg(node, "config"), "configurable");
+    const metadata = getKwarg(node, "metadata");
+    const parentConfigurable = dictValue(getKwarg(node, "parent_config"), "configurable");
+    return {
+      node,
+      index,
+      id: scalar(dictValue(configurable, "checkpoint_id")) ?? `snapshot-${index}`,
+      parentId: scalar(dictValue(parentConfigurable, "checkpoint_id")),
+      threadId: scalar(dictValue(configurable, "thread_id")),
+      source: scalar(dictValue(metadata, "source")) ?? "unknown",
+      step: scalar(dictValue(metadata, "step")),
+      createdAt: scalar(getKwarg(node, "created_at")) ?? "",
+      valuesText: valuesPreview(getKwarg(node, "values")),
+      nextText: nextPreview(getKwarg(node, "next")),
+    };
+  });
+}
+
+function valuesPreview(node) {
+  if (!node) {
+    return "无 values";
+  }
+  if (node.type === "dict" && !node.entries.length) {
+    return "{}";
+  }
+  return formatPython(node).replace(/\s+/g, " ").trim();
+}
+
+function nextPreview(node) {
+  const items = node && ["tuple", "list"].includes(node.type) ? node.items.map(scalar).filter((value) => value !== undefined) : [];
+  return items.length ? `next: ${items.join(" → ")}` : "next: 结束";
+}
+
+function renderFlowNode(item) {
+  const sourceClass = `source-${String(item.source).replace(/[^a-z]/gi, "").toLowerCase()}`;
+  const time = item.createdAt ? item.createdAt.slice(11, 19) : "";
+  return `<button class="flow-node" type="button" data-id="${escapeHtml(item.id)}" aria-pressed="false">
+      <span class="flow-node-top">
+        <span class="badge ${sourceClass}">${escapeHtml(item.source)}</span>
+        <span class="flow-node-step">${item.step === undefined ? "step ?" : `step ${escapeHtml(item.step)}`}</span>
+      </span>
+      <strong class="flow-node-values">${escapeHtml(item.valuesText)}</strong>
+      <span class="flow-node-meta">${escapeHtml(time)} · ${escapeHtml(item.nextText)}</span>
+    </button>`;
+}
+
+function renderFlow(items) {
+  const groups = new Map();
+  items.forEach((item) => {
+    const key = item.step === undefined ? "?" : String(item.step);
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key).push(item);
+  });
+
+  const steps = [...groups.keys()].sort((a, b) => (a === "?" ? 1 : b === "?" ? -1 : Number(a) - Number(b)));
+  const columns = steps
+    .map((step) => {
+      const list = groups.get(step).slice().sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      return `<div class="flow-column">
+          <span class="flow-step-label">step ${escapeHtml(step)}</span>
+          ${list.map(renderFlowNode).join("")}
+        </div>`;
+    })
+    .join("");
+
+  return `<div class="flow-wrap">
+      <p class="flow-hint">悬浮节点查看相邻快照，点击查看完整详情</p>
+      <div class="flow">
+        <div class="flow-inner">
+          <svg class="flow-edges" aria-hidden="true"></svg>
+          <div class="flow-columns">${columns}</div>
+        </div>
+      </div>
+    </div>
+    <section id="flow-detail" class="flow-detail" aria-live="polite"></section>`;
+}
+
+function renderResult(items) {
+  const threadIds = [...new Set(items.map((item) => item.threadId).filter(Boolean))];
+  const sources = [...new Set(items.map((item) => item.source))];
 
   return `<div class="result-summary">
-      <div><span>快照</span><strong>${snapshots.length}</strong></div>
+      <div><span>快照</span><strong>${items.length}</strong></div>
       ${threadIds.length ? `<div><span>thread_id</span><code>${escapeHtml(threadIds.join(", "))}</code></div>` : ""}
       <div><span>来源</span><span class="source-list">${sources
         .map((source) => `<span class="badge source-${String(source).replace(/[^a-z]/gi, "").toLowerCase()}">${escapeHtml(source)}</span>`)
         .join("")}</span></div>
     </div>
-    <div class="snapshot-list">${snapshots.map((node, index) => renderSnapshot(node, index)).join("")}</div>`;
+    ${renderFlow(items)}`;
+}
+
+function mountFlow(items) {
+  const byId = new Map(items.map((item) => [item.id, item]));
+  const nodes = [...result.querySelectorAll(".flow-node")];
+  const svg = result.querySelector(".flow-edges");
+  const inner = result.querySelector(".flow-inner");
+  const detail = result.querySelector("#flow-detail");
+  if (!svg || !inner || !detail) {
+    return;
+  }
+
+  const edges = items
+    .filter((item) => item.parentId && byId.has(item.parentId))
+    .map((item) => ({ fromId: item.parentId, toId: item.id }));
+
+  edges.forEach((edge) => {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("class", "flow-edge");
+    path.dataset.from = edge.fromId;
+    path.dataset.to = edge.toId;
+    svg.appendChild(path);
+  });
+
+  const edgeEls = [...svg.querySelectorAll(".flow-edge")];
+
+  function drawEdges() {
+    const base = inner.getBoundingClientRect();
+    svg.setAttribute("viewBox", `0 0 ${inner.scrollWidth} ${inner.scrollHeight}`);
+    edgeEls.forEach((path) => {
+      const fromNode = nodes.find((node) => node.dataset.id === path.dataset.from);
+      const toNode = nodes.find((node) => node.dataset.id === path.dataset.to);
+      if (!fromNode || !toNode) {
+        return;
+      }
+      const a = fromNode.getBoundingClientRect();
+      const b = toNode.getBoundingClientRect();
+      const x1 = a.right - base.left;
+      const y1 = a.top - base.top + a.height / 2;
+      const x2 = b.left - base.left;
+      const y2 = b.top - base.top + b.height / 2;
+      const curve = Math.max(36, (x2 - x1) / 2);
+      path.setAttribute("d", `M ${x1} ${y1} C ${x1 + curve} ${y1}, ${x2 - curve} ${y2}, ${x2} ${y2}`);
+    });
+  }
+
+  function paint(item) {
+    const related = new Set();
+    if (item.parentId) {
+      related.add(item.parentId);
+    }
+    items.forEach((other) => {
+      if (other.parentId === item.id) {
+        related.add(other.id);
+      }
+    });
+    nodes.forEach((node) => node.classList.toggle("is-related", related.has(node.dataset.id)));
+    edgeEls.forEach((path) => path.classList.toggle("is-active", path.dataset.from === item.id || path.dataset.to === item.id));
+  }
+
+  function resetPaint() {
+    nodes.forEach((node) => node.classList.remove("is-related"));
+    edgeEls.forEach((path) => path.classList.remove("is-active"));
+    if (selectedId && byId.has(selectedId)) {
+      paint(byId.get(selectedId));
+    }
+  }
+
+  function select(item) {
+    selectedId = item.id;
+    nodes.forEach((node) => {
+      const isSelected = node.dataset.id === item.id;
+      node.classList.toggle("is-selected", isSelected);
+      node.setAttribute("aria-pressed", String(isSelected));
+    });
+    resetPaint();
+    detail.innerHTML = renderSnapshot(item.node, item.index);
+  }
+
+  nodes.forEach((node) => {
+    const item = byId.get(node.dataset.id);
+    if (!item) {
+      return;
+    }
+    node.addEventListener("mouseenter", () => paint(item));
+    node.addEventListener("mouseleave", resetPaint);
+    node.addEventListener("focus", () => paint(item));
+    node.addEventListener("blur", resetPaint);
+    node.addEventListener("click", () => select(item));
+  });
+
+  drawEdgesRef = drawEdges;
+  requestAnimationFrame(drawEdges);
+
+  if (items.length) {
+    select(items[0]);
+  }
 }
 
 function updateInputStats() {
@@ -708,16 +889,22 @@ function runParse() {
 
     const snapshots = snapshotNodes(root);
     if (snapshots.length) {
-      result.innerHTML = renderResult(snapshots);
+      const items = buildItems(snapshots);
+      result.innerHTML = renderResult(items);
+      mountFlow(items);
       setStatus(`解析完成，共 ${snapshots.length} 条快照`);
       return;
     }
     result.innerHTML = `<div class="result-note">未识别到 StateSnapshot，以下为解析后的数据结构。</div>
       <pre class="code-block">${escapeHtml(formatPython(root))}</pre>`;
+    selectedId = null;
+    drawEdgesRef = null;
     setStatus("解析完成，但未发现 StateSnapshot", "muted");
   } catch (error) {
     clearFormatted();
     result.innerHTML = "";
+    selectedId = null;
+    drawEdgesRef = null;
     setStatus(error.message, "error");
   }
 }
@@ -749,6 +936,8 @@ document.querySelector("#clear").addEventListener("click", () => {
   updateInputStats();
   clearFormatted();
   result.innerHTML = "";
+  selectedId = null;
+  drawEdgesRef = null;
   setStatus("已清空。按 Cmd/Ctrl + Enter 开始解析。", "muted");
   input.focus();
 });
@@ -759,6 +948,12 @@ input.addEventListener("keydown", (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
     event.preventDefault();
     runParse();
+  }
+});
+
+window.addEventListener("resize", () => {
+  if (drawEdgesRef) {
+    drawEdgesRef();
   }
 });
 
