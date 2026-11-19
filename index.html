@@ -27,6 +27,7 @@
         <span aria-hidden="true"></span>
       </button>
       <nav id="site-nav" class="site-nav">
+        <a href="#tools">Text Tools</a>
         <a href="#work">Selected Work</a>
         <a href="#stack">Stack</a>
         <a href="#notes">Notes</a>
@@ -46,10 +47,11 @@
             <p class="hero-kicker">Code. Ship. Learn.</p>
             <p class="hero-intro">I build thoughtful software from clean ideas.</p>
             <div class="hero-actions" aria-label="Primary links">
-              <a class="button primary" href="#work">
+              <a class="button primary" href="#tools">
                 <span aria-hidden="true">&gt;_</span>
-                View Projects
+                Open Text Tools
               </a>
+              <a class="button secondary" href="#work">View Projects</a>
               <a class="button secondary" href="https://github.com/galen-coder" rel="me">
                 <svg aria-hidden="true" viewBox="0 0 24 24">
                   <path d="M12 2.2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.2-3.37-1.2-.45-1.16-1.1-1.47-1.1-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.04 1.53 1.04.89 1.52 2.34 1.08 2.9.83.1-.65.35-1.08.64-1.33-2.22-.25-4.56-1.1-4.56-4.93 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02A9.5 9.5 0 0 1 12 6.2c.85 0 1.7.11 2.5.34 1.9-1.29 2.74-1.02 2.74-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.83-2.34 4.68-4.57 4.93.36.31.68.92.68 1.86v2.76c0 .27.18.58.69.48A10 10 0 0 0 12 2.2Z"></path>
@@ -77,6 +79,148 @@
   }
 }</code></pre>
           </aside>
+        </div>
+      </section>
+
+      <section id="tools" class="section tools-section" aria-labelledby="tools-title">
+        <div class="section-heading">
+          <p class="section-command" aria-hidden="true">&gt; ls ~/text-tools</p>
+          <h2 id="tools-title">Text Tools</h2>
+          <a href="https://github.com/galen-coder/galen-coder.github.io#工具分类">Full catalog on GitHub</a>
+        </div>
+        <p class="tools-note">纯浏览器运行，输入内容不会离开你的设备。JSON 格式化已上线，其余工具陆续补齐。</p>
+        <div class="tools-grid">
+          <article class="tool-group">
+            <h3>格式化 <span>Format</span></h3>
+            <ul class="tool-list">
+              <li>
+                <a class="tool-card is-live" href="tools/json-format.html">
+                  <span class="tool-card-body">
+                    <strong>JSON 格式化</strong>
+                    <span>美化、压缩与校验 JSON</span>
+                  </span>
+                  <span class="tool-card-state">可用</span>
+                </a>
+              </li>
+              <li>
+                <div class="tool-card is-planned">
+                  <span class="tool-card-body">
+                    <strong>SQL 格式化</strong>
+                    <span>关键字统一与缩进</span>
+                  </span>
+                  <span class="tool-card-state">计划中</span>
+                </div>
+              </li>
+              <li>
+                <div class="tool-card is-planned">
+                  <span class="tool-card-body">
+                    <strong>HTML 格式化</strong>
+                    <span>标签缩进与属性换行</span>
+                  </span>
+                  <span class="tool-card-state">计划中</span>
+                </div>
+              </li>
+            </ul>
+          </article>
+
+          <article class="tool-group">
+            <h3>编码转换 <span>Encoding</span></h3>
+            <ul class="tool-list">
+              <li>
+                <div class="tool-card is-planned">
+                  <span class="tool-card-body">
+                    <strong>Base64 编解码</strong>
+                    <span>文本与 Base64 互转</span>
+                  </span>
+                  <span class="tool-card-state">计划中</span>
+                </div>
+              </li>
+              <li>
+                <div class="tool-card is-planned">
+                  <span class="tool-card-body">
+                    <strong>URL 编解码</strong>
+                    <span>encodeURIComponent 互转</span>
+                  </span>
+                  <span class="tool-card-state">计划中</span>
+                </div>
+              </li>
+              <li>
+                <div class="tool-card is-planned">
+                  <span class="tool-card-body">
+                    <strong>Unicode 转义</strong>
+                    <span>中文与 \uXXXX 互转</span>
+                  </span>
+                  <span class="tool-card-state">计划中</span>
+                </div>
+              </li>
+            </ul>
+          </article>
+
+          <article class="tool-group">
+            <h3>数据转换 <span>Convert</span></h3>
+            <ul class="tool-list">
+              <li>
+                <div class="tool-card is-planned">
+                  <span class="tool-card-body">
+                    <strong>JSON / YAML 互转</strong>
+                    <span>结构化数据格式互换</span>
+                  </span>
+                  <span class="tool-card-state">计划中</span>
+                </div>
+              </li>
+              <li>
+                <div class="tool-card is-planned">
+                  <span class="tool-card-body">
+                    <strong>CSV 转 JSON</strong>
+                    <span>表格数据转数组对象</span>
+                  </span>
+                  <span class="tool-card-state">计划中</span>
+                </div>
+              </li>
+              <li>
+                <div class="tool-card is-planned">
+                  <span class="tool-card-body">
+                    <strong>时间戳转换</strong>
+                    <span>Unix 时间戳与日期互转</span>
+                  </span>
+                  <span class="tool-card-state">计划中</span>
+                </div>
+              </li>
+            </ul>
+          </article>
+
+          <article class="tool-group">
+            <h3>文本处理 <span>Text</span></h3>
+            <ul class="tool-list">
+              <li>
+                <div class="tool-card is-planned">
+                  <span class="tool-card-body">
+                    <strong>大小写转换</strong>
+                    <span>全大写、全小写与驼峰命名</span>
+                  </span>
+                  <span class="tool-card-state">计划中</span>
+                </div>
+              </li>
+              <li>
+                <div class="tool-card is-planned">
+                  <span class="tool-card-body">
+                    <strong>行去重排序</strong>
+                    <span>按行去重、排序与反转</span>
+                  </span>
+                  <span class="tool-card-state">计划中</span>
+                </div>
+              </li>
+              <li>
+                <div class="tool-card is-planned">
+                  <span class="tool-card-body">
+                    <strong>文本统计</strong>
+                    <span>字符数、单词数与行数</span>
+                  </span>
+                  <span class="tool-card-state">计划中</span>
+                </div>
+              </li>
+            </ul>
+          </article>
         </div>
       </section>
 
