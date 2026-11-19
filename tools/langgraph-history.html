@@ -685,6 +685,86 @@
         color: var(--ink);
       }
 
+      #formatted-output {
+        white-space: normal;
+      }
+
+      .code-line,
+      .rich-line {
+        display: block;
+        min-height: 1.6em;
+        white-space: pre;
+      }
+
+      .code-line {
+        padding-left: calc(2ch + var(--depth, 0) * 4ch);
+      }
+
+      .rich-line {
+        border-radius: var(--radius);
+      }
+
+      .json-fold > summary,
+      .rich-fold > summary {
+        list-style: none;
+        cursor: pointer;
+        border-radius: var(--radius);
+      }
+
+      .json-fold > summary::-webkit-details-marker,
+      .rich-fold > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .json-fold > summary {
+        position: relative;
+      }
+
+      .json-fold > summary:hover,
+      .rich-fold > summary:hover {
+        background: var(--hover);
+      }
+
+      .json-fold > summary:focus-visible,
+      .rich-fold > summary:focus-visible {
+        outline: 2px solid var(--link);
+        outline-offset: -2px;
+      }
+
+      .json-fold > summary .fold-caret {
+        position: absolute;
+        left: calc(var(--depth, 0) * 4ch + 0.5ch);
+      }
+
+      .rich-fold > summary .fold-caret {
+        float: right;
+        margin-right: 10px;
+      }
+
+      .fold-caret {
+        color: var(--muted);
+      }
+
+      .fold-caret::before {
+        content: "▸";
+      }
+
+      details[open] > summary .fold-caret::before {
+        content: "▾";
+      }
+
+      .fold-hint {
+        color: var(--muted);
+      }
+
+      details[open] > summary .fold-hint {
+        display: none;
+      }
+
+      .rich-break {
+        height: 12px;
+      }
+
       @media (max-width: 640px) {
         #output-stats {
           display: none;
@@ -744,7 +824,7 @@
                 <button id="copy" type="button">复制</button>
               </span>
             </div>
-            <pre id="formatted-output" class="pane-code" data-placeholder="格式化结果会显示在这里" tabindex="0"></pre>
+            <div id="formatted-output" class="pane-code" data-placeholder="格式化结果会显示在这里" tabindex="0"></div>
           </div>
         </div>
         <p id="status" class="status" data-tone="muted" role="status" aria-live="polite">等待输入。按 Cmd/Ctrl + Enter 开始解析。</p>

@@ -10,6 +10,7 @@ const { copyText, describeText, onModEnter } = window.ToolKit;
 let selectedId = null;
 let drawEdgesRef = null;
 let formattedRoot = null;
+let formattedPlainText = "";
 let viewMode = "json";
 
 const SAMPLE = `[
@@ -353,40 +354,6 @@ function escapeHtml(text) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
-}
-
-function highlightPlain(segment) {
-  return escapeHtml(segment).replace(/([{}()[\],:=])/g, '<span class="py-punct">$1</span>');
-}
-
-function highlightPython(text) {
-  const pattern = /("(?:\\u[a-fA-F0-9]{4}|\\x[a-fA-F0-9]{2}|\\[^ux]|[^\\"])*"|'(?:\\u[a-fA-F0-9]{4}|\\x[a-fA-F0-9]{2}|\\[^ux]|[^\\'])*')|\b(True|False|None)\b|(?<![\w.])-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|\b([A-Za-z_][A-Za-z0-9_]*)(?=\s*\()|\b([A-Za-z_][A-Za-z0-9_]*)(?=\s*=)/g;
-  let html = "";
-  let lastIndex = 0;
-  let match;
-
-  while ((match = pattern.exec(text)) !== null) {
-    html += highlightPlain(text.slice(lastIndex, match.index));
-
-    if (match[1] !== undefined) {
-      const rest = text.slice(pattern.lastIndex);
-      const isKey = /^\s*:/.test(rest);
-      html += `<span class="${isKey ? "py-key" : "py-string"}">${escapeHtml(match[1])}</span>`;
-    } else if (match[2] !== undefined) {
-      html += `<span class="py-literal">${match[2]}</span>`;
-    } else if (match[3] !== undefined) {
-      html += `<span class="py-call">${match[3]}</span>`;
-    } else if (match[4] !== undefined) {
-      html += `<span class="py-key">${match[4]}</span>`;
-    } else {
-      html += `<span class="py-number">${match[0]}</span>`;
-    }
-
-    lastIndex = pattern.lastIndex;
-  }
-
-  html += highlightPlain(text.slice(lastIndex));
-  return html;
 }
 
 function quotePython(value) {
@@ -1017,22 +984,30 @@ function isRichLeaf(node) {
   return false;
 }
 
-function pushRichNode(lines, node, prefix, isLast, keyHtml, sep) {
+function richLineHtml(guide, html) {
+  return `<div class="rich-line"><span class="rich-guide">${escapeHtml(guide)}</span>${html}</div>`;
+}
+
+function richNodeHtml(node, prefix, isLast, keyHtml, sep) {
   const guide = `${prefix}${isLast ? "╰─ " : "├─ "}`;
   if (isRichLeaf(node)) {
-    lines.push({ guide, html: `${keyHtml}${sep}${richLeafHtml(node)}` });
-    return;
-  }
-  if (node.type === "call") {
-    lines.push({ guide, html: `${keyHtml}${sep}<span class="py-call">${escapeHtml(node.name)}</span>` });
-  } else {
-    lines.push({ guide, html: `${keyHtml}${sep}<span class="rich-type">${richTypeLabel(node)}</span>` });
+    return richLineHtml(guide, `${keyHtml}${sep}${richLeafHtml(node)}`);
   }
   const children = richChildren(node);
+  const head =
+    node.type === "call"
+      ? `<span class="py-call">${escapeHtml(node.name)}</span>`
+      : `<span class="rich-type">${richTypeLabel(node)}</span>`;
+  if (!children.length) {
+    return richLineHtml(guide, `${keyHtml}${sep}${head}()`);
+  }
   const nextPrefix = `${prefix}${isLast ? "   " : "│  "}`;
-  children.forEach((child, index) => {
-    pushRichNode(lines, child.value, nextPrefix, index === children.length - 1, child.keyHtml, child.sep);
-  });
+  const body = children
+    .map((child, index) =>
+      richNodeHtml(child.value, nextPrefix, index === children.length - 1, child.keyHtml, child.sep)
+    )
+    .join("");
+  return `<details class="fold rich-fold" open><summary class="rich-line"><span class="rich-guide">${escapeHtml(guide)}</span>${keyHtml}${sep}${head}<span class="fold-hint"> …</span><span class="fold-caret" aria-hidden="true"></span></summary>${body}</details>`;
 }
 
 function renderRich(root) {
@@ -1040,30 +1015,108 @@ function renderRich(root) {
     return "";
   }
   const nodes = root.type === "list" || root.type === "tuple" ? root.items : [root];
-  const lines = [];
-  nodes.forEach((node, index) => {
-    if (index > 0) {
-      lines.push({ guide: "", html: "" });
+  return nodes
+    .map((node, index) => {
+      const indexLabel = `<span class="rich-index">#${index + 1}</span>`;
+      let html;
+      if (isRichLeaf(node)) {
+        html = richLineHtml("", `${richLeafHtml(node)} ${indexLabel}`);
+      } else {
+        const children = richChildren(node);
+        const head =
+          node.type === "call"
+            ? `<span class="py-call">${escapeHtml(node.name)}</span>`
+            : `<span class="rich-type">${richTypeLabel(node)}</span>`;
+        if (!children.length) {
+          html = richLineHtml("", `${head}() ${indexLabel}`);
+        } else {
+          const body = children
+            .map((child, childIndex) =>
+              richNodeHtml(child.value, "", childIndex === children.length - 1, child.keyHtml, child.sep)
+            )
+            .join("");
+          html = `<details class="fold rich-fold" open><summary class="rich-line">${head} ${indexLabel}<span class="fold-hint"> (…)</span><span class="fold-caret" aria-hidden="true"></span></summary>${body}</details>`;
+        }
+      }
+      return index ? `<div class="rich-break"></div>${html}` : html;
+    })
+    .join("");
+}
+
+function commaHtml() {
+  return '<span class="py-punct">,</span>';
+}
+
+function jsonLine(depth, html) {
+  return `<div class="code-line" style="--depth:${depth}">${html}</div>`;
+}
+
+function jsonFold(depth, summaryHtml, childrenHtml, closeHtml) {
+  return `<details class="fold json-fold" open><summary class="code-line" style="--depth:${depth}"><span class="fold-caret" aria-hidden="true"></span>${summaryHtml}<span class="fold-hint"> …</span></summary>${childrenHtml}${jsonLine(depth, closeHtml)}</details>`;
+}
+
+function renderJsonNode(node, depth, prefixHtml, suffixHtml) {
+  if (!node) {
+    return jsonLine(depth, `${prefixHtml}<span class="py-literal">None</span>${suffixHtml}`);
+  }
+  if (isRichLeaf(node)) {
+    return jsonLine(depth, `${prefixHtml}${richLeafHtml(node)}${suffixHtml}`);
+  }
+  if (node.type === "call") {
+    const kwargs = Object.entries(node.kwargs);
+    const total = node.args.length + kwargs.length;
+    if (!total) {
+      return jsonLine(
+        depth,
+        `${prefixHtml}<span class="py-call">${escapeHtml(node.name)}</span><span class="py-punct">()</span>${suffixHtml}`
+      );
     }
-    const indexLabel = `<span class="rich-index">#${index + 1}</span>`;
-    if (node.type === "call") {
-      lines.push({ guide: "", html: `<span class="py-call">${escapeHtml(node.name)}</span> ${indexLabel}` });
-    } else if (isRichLeaf(node)) {
-      lines.push({ guide: "", html: `${richLeafHtml(node)} ${indexLabel}` });
-    } else {
-      lines.push({ guide: "", html: `<span class="rich-type">${richTypeLabel(node)}</span> ${indexLabel}` });
-    }
-    const children = richChildren(node);
-    children.forEach((child, childIndex) => {
-      pushRichNode(lines, child.value, "", childIndex === children.length - 1, child.keyHtml, child.sep);
+    const children = node.args.map((item, index) =>
+      renderJsonNode(item, depth + 1, "", index < total - 1 ? commaHtml() : "")
+    );
+    kwargs.forEach(([key, value], index) => {
+      const comma = node.args.length + index < total - 1 ? commaHtml() : "";
+      const keyHtml = `<span class="py-key">${escapeHtml(key)}</span><span class="py-punct">=</span>`;
+      children.push(renderJsonNode(value, depth + 1, keyHtml, comma));
     });
-  });
-  return lines
-    .map(
-      (line) =>
-        `<span class="rich-line"><span class="rich-guide">${escapeHtml(line.guide)}</span>${line.html}</span>`
-    )
-    .join("\n");
+    return jsonFold(
+      depth,
+      `${prefixHtml}<span class="py-call">${escapeHtml(node.name)}</span><span class="py-punct">(</span>`,
+      children.join(""),
+      `<span class="py-punct">)</span>${suffixHtml}`
+    );
+  }
+  if (node.type === "dict") {
+    const children = node.entries.map((entry, index) => {
+      const keyHtml = `<span class="py-key">${escapeHtml(quotePython(entry.key))}</span><span class="py-punct">:</span> `;
+      const comma = index < node.entries.length - 1 ? commaHtml() : "";
+      return renderJsonNode(entry.value, depth + 1, keyHtml, comma);
+    });
+    return jsonFold(
+      depth,
+      `${prefixHtml}<span class="py-punct">{</span>`,
+      children.join(""),
+      `<span class="py-punct">}</span>${suffixHtml}`
+    );
+  }
+  if (node.type === "list" || node.type === "tuple") {
+    const isTuple = node.type === "tuple";
+    const children = node.items.map((item, index) => {
+      const comma = isTuple || index < node.items.length - 1 ? commaHtml() : "";
+      return renderJsonNode(item, depth + 1, "", comma);
+    });
+    return jsonFold(
+      depth,
+      `${prefixHtml}<span class="py-punct">${isTuple ? "(" : "["}</span>`,
+      children.join(""),
+      `<span class="py-punct">${isTuple ? ")" : "]"}</span>${suffixHtml}`
+    );
+  }
+  return "";
+}
+
+function renderJson(root) {
+  return renderJsonNode(root, 0, "", "");
 }
 
 function setViewMode(mode) {
@@ -1081,19 +1134,14 @@ function setViewMode(mode) {
 
 function writeFormatted(root) {
   formattedRoot = root;
-  formattedOutput.classList.toggle("is-rich", viewMode === "rich");
-  if (viewMode === "rich") {
-    formattedOutput.innerHTML = renderRich(root);
-  } else {
-    const text = formatPython(root);
-    formattedOutput.innerHTML = highlightPython(text);
-  }
-  updateOutputStats(formattedOutput.textContent || "");
+  formattedPlainText = formatPython(root);
+  formattedOutput.innerHTML = viewMode === "rich" ? renderRich(root) : renderJson(root);
+  updateOutputStats(formattedPlainText);
 }
 
 function clearFormatted() {
   formattedRoot = null;
-  formattedOutput.classList.remove("is-rich");
+  formattedPlainText = "";
   formattedOutput.innerHTML = "";
   updateOutputStats("");
 }
@@ -1128,7 +1176,7 @@ function runParse() {
 document.querySelector("#parse").addEventListener("click", runParse);
 
 document.querySelector("#copy").addEventListener("click", async () => {
-  const text = formattedOutput.textContent;
+  const text = formattedPlainText || formattedOutput.textContent;
   if (!text) {
     setStatus("没有可复制的格式化结果", "error");
     return;
