@@ -5,6 +5,8 @@ const indent = document.querySelector("#indent");
 const inputStats = document.querySelector("#input-stats");
 const outputStats = document.querySelector("#output-stats");
 
+const { copyText, describeText, onModEnter } = window.ToolKit;
+
 const SAMPLE = {
   name: "galen-coder",
   site: "https://galen-coder.github.io",
@@ -27,11 +29,11 @@ function updateInputStats() {
     inputStats.textContent = "0 字符";
     return;
   }
-  inputStats.textContent = `${value.split("\n").length} 行 / ${value.length} 字符`;
+  inputStats.textContent = describeText(value);
 }
 
 function updateOutputStats(text) {
-  outputStats.textContent = text ? `${text.split("\n").length} 行 / ${text.length} 字符` : "";
+  outputStats.textContent = describeText(text);
 }
 
 function describeError(raw, error) {
@@ -137,7 +139,7 @@ async function copyOutput() {
     return;
   }
   try {
-    await navigator.clipboard.writeText(text);
+    await copyText(text);
     setStatus("已复制到剪贴板");
   } catch (error) {
     setStatus("复制失败，请手动选择内容复制", "error");
@@ -164,11 +166,6 @@ document.querySelector("#clear").addEventListener("click", () => {
 
 input.addEventListener("input", updateInputStats);
 
-input.addEventListener("keydown", (event) => {
-  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-    event.preventDefault();
-    formatJSON();
-  }
-});
+onModEnter(input, formatJSON);
 
 updateInputStats();

@@ -4,265 +4,78 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="在线 JSON 格式化工具：美化、压缩与校验 JSON，支持 2/4 空格和 Tab 缩进，全部在浏览器本地完成。">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#f7f6f3">
     <meta property="og:title" content="JSON 格式化 | Galen Coder Text Tools">
     <meta property="og:description" content="美化、压缩与校验 JSON，数据不上传。">
     <meta property="og:type" content="website">
     <title>JSON 格式化 | Galen Coder Text Tools</title>
     <link rel="icon" href="../favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../assets/tool.css">
     <style>
-      .tool-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        width: min(1180px, calc(100% - 2rem));
-        margin: 0 auto;
-        padding: 1.3rem 0;
-        border-bottom: 1px solid var(--line);
-        font-family: var(--mono);
-        font-size: 0.86rem;
+      :root {
+        --ink: #37352f;
+        --paper: #f7f6f3;
+        --white: #ffffff;
+        --hover: #efedea;
+        --active: #e3e1db;
+        --hairline: #e9e7e4;
+        --link: #2eaadc;
+        --red: #eb5757;
+        --muted: #787774;
+        --sans: Inter, -apple-system, "Segoe UI", "PingFang SC", ui-sans-serif, sans-serif;
+        --mono: "SFMono-Regular", "Cascadia Code", "Liberation Mono", Menlo, ui-monospace, monospace;
+        --radius: 4px;
       }
 
-      .back-link {
-        color: var(--muted);
-        transition: color 160ms ease;
-      }
-
-      .back-link:hover,
-      .back-link:focus-visible {
-        color: var(--text);
-      }
-
-      .tool-main {
-        width: min(1180px, calc(100% - 2rem));
-        margin: 0 auto;
-        padding: 1.2rem 0 4rem;
-      }
-
-      .tool-intro {
-        max-width: 46rem;
-        margin-bottom: 1.8rem;
-      }
-
-      .tool-intro .section-command {
-        margin-bottom: 0.7rem;
-      }
-
-      .tool-intro h1 {
-        margin-bottom: 0.8rem;
-        font-family: var(--mono);
-        font-size: clamp(2.2rem, 5vw, 3.4rem);
-        font-weight: 650;
-        line-height: 1.05;
-      }
-
-      .tool-intro p:last-child {
-        margin-bottom: 0;
-        color: var(--muted);
-      }
-
-      .editor {
-        overflow: hidden;
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        background: var(--surface);
-        box-shadow: var(--shadow);
-      }
-
-      .editor-toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.8rem;
-        padding: 0.8rem 1rem;
-        border-bottom: 1px solid var(--line);
-        color: var(--muted);
-        font-family: var(--mono);
-        font-size: 0.8rem;
+      .pane-field,
+      .pane-code {
+        font-size: 14px;
       }
 
       .editor-toolbar label {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
       }
 
       .editor-toolbar select {
-        padding: 0.35rem 0.5rem;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        background: var(--bg);
-        color: var(--text);
-        font-family: var(--mono);
-        font-size: 0.8rem;
+        padding: 4px 8px;
+        border: 1px solid var(--hairline);
+        border-radius: var(--radius);
+        background: var(--white);
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 13px;
+        line-height: 1.4;
       }
 
-      .editor-toolbar select:focus-visible,
-      .pane-head button:focus-visible {
-        outline: 2px solid var(--accent);
+      .editor-toolbar select:focus-visible {
+        outline: 2px solid var(--link);
         outline-offset: 2px;
       }
 
-      .toolbar-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-      }
-
-      .toolbar-actions .button {
-        min-height: 2.4rem;
-        padding: 0 0.9rem;
-        font-family: var(--mono);
-        font-size: 0.82rem;
-      }
-
-      .editor-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .pane {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        border-right: 1px solid var(--line);
-      }
-
-      .pane:last-child {
-        border-right: 0;
-      }
-
-      .pane-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        padding: 0.65rem 1rem;
-        border-bottom: 1px solid var(--line);
-        color: var(--faint);
-        font-family: var(--mono);
-        font-size: 0.76rem;
-      }
-
-      .pane-actions {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.85rem;
-      }
-
-      .pane-head button {
-        padding: 0;
-        border: 0;
-        background: none;
-        color: var(--accent);
-        font-family: var(--mono);
-        font-size: 0.76rem;
-        cursor: pointer;
-      }
-
-      .pane-head button:hover {
-        color: var(--text);
-      }
-
-      #json-input,
-      #json-output {
-        display: block;
-        width: 100%;
-        height: 52vh;
-        min-height: 20rem;
-        margin: 0;
-        padding: 1rem;
-        border: 0;
-        background: transparent;
-        color: #26282c;
-        font-family: var(--mono);
-        font-size: 0.86rem;
-        line-height: 1.7;
-      }
-
-      #json-input {
-        resize: vertical;
-        outline: none;
-      }
-
-      #json-input::placeholder {
-        color: var(--faint);
-      }
-
-      #json-input:focus-visible,
-      #json-output:focus-visible {
-        box-shadow: inset 0 0 0 1px var(--line-strong);
-      }
-      #json-output {
-        overflow: auto;
-        white-space: pre;
-        outline: none;
-      }
-
-      #json-output:empty::before {
-        content: "格式化结果会显示在这里";
-        color: var(--faint);
-      }
-
+      /* #2eaadc 在白底上对比度不足，键名改用更深的蓝色。 */
       #json-output .tok-key {
         color: #1a56db;
       }
 
       #json-output .tok-string {
-        color: #0f7b4f;
+        color: #448361;
       }
 
       #json-output .tok-number {
-        color: #b45309;
+        color: #b76100;
       }
 
       #json-output .tok-literal {
-        color: #7c3aed;
+        color: #9065b0;
       }
 
       #json-output .tok-punct {
-        color: #6b7280;
-      }
-
-      .status {
-        margin: 0;
-        padding: 0.75rem 1rem;
-        border-top: 1px solid var(--line);
-        color: var(--green);
-        font-family: var(--mono);
-        font-size: 0.78rem;
-      }
-
-      .status[data-tone="muted"] {
-        color: var(--faint);
-      }
-
-      .status[data-tone="error"] {
-        color: #b42318;
-      }
-
-      @media (max-width: 820px) {
-        .editor-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .pane {
-          border-right: 0;
-          border-bottom: 1px solid var(--line);
-        }
-
-        .pane:last-child {
-          border-bottom: 0;
-        }
-
-        #json-input,
-        #json-output {
-          height: 34vh;
-          min-height: 14rem;
-        }
+        color: #9b9a97;
       }
     </style>
   </head>
@@ -271,7 +84,6 @@
 
     <header class="tool-header">
       <a class="brand" href="../index.html" target="_blank" rel="noopener">
-        <span class="prompt-mark" aria-hidden="true">&gt;_</span>
         <span>galen-coder</span>
       </a>
       <a class="back-link" href="../index.html#tools" target="_blank" rel="noopener">&larr; 返回工具箱</a>
@@ -309,7 +121,7 @@
               <span id="input-stats">0 字符</span>
             </div>
             <label class="sr-only" for="json-input">输入 JSON</label>
-            <textarea id="json-input" spellcheck="false" placeholder='粘贴 JSON，例如：{"hello": "world"}'></textarea>
+            <textarea id="json-input" class="pane-field" spellcheck="false" placeholder='粘贴 JSON，例如：{"hello": "world"}'></textarea>
           </div>
           <div class="pane">
             <div class="pane-head">
@@ -319,7 +131,7 @@
                 <button id="copy" type="button">复制</button>
               </span>
             </div>
-            <pre id="json-output" tabindex="0"></pre>
+            <pre id="json-output" class="pane-code" data-placeholder="格式化结果会显示在这里" tabindex="0"></pre>
           </div>
         </div>
 
@@ -327,6 +139,7 @@
       </section>
     </main>
 
+    <script src="../assets/tool.js"></script>
     <script src="json-format.js"></script>
   </body>
 </html>

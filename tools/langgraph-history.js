@@ -5,6 +5,8 @@ const formattedOutput = document.querySelector("#formatted-output");
 const inputStats = document.querySelector("#input-stats");
 const outputStats = document.querySelector("#output-stats");
 
+const { copyText, describeText, onModEnter } = window.ToolKit;
+
 let selectedId = null;
 let drawEdgesRef = null;
 
@@ -911,11 +913,11 @@ function mountFlow(items) {
 
 function updateInputStats() {
   const value = input.value;
-  inputStats.textContent = value ? `${value.split("\n").length} 行 / ${value.length} 字符` : "0 字符";
+  inputStats.textContent = value ? describeText(value) : "0 字符";
 }
 
 function updateOutputStats(text) {
-  outputStats.textContent = text ? `${text.split("\n").length} 行 / ${text.length} 字符` : "";
+  outputStats.textContent = describeText(text);
 }
 
 function writeFormatted(root) {
@@ -965,7 +967,7 @@ document.querySelector("#copy").addEventListener("click", async () => {
     return;
   }
   try {
-    await navigator.clipboard.writeText(text);
+    await copyText(text);
     setStatus("已复制格式化结果");
   } catch (error) {
     setStatus("复制失败，请手动选择内容复制", "error");
@@ -991,12 +993,7 @@ document.querySelector("#clear").addEventListener("click", () => {
 
 input.addEventListener("input", updateInputStats);
 
-input.addEventListener("keydown", (event) => {
-  if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-    event.preventDefault();
-    runParse();
-  }
-});
+onModEnter(input, runParse);
 
 window.addEventListener("resize", () => {
   if (drawEdgesRef) {
