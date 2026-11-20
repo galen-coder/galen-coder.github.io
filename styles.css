@@ -527,21 +527,21 @@ h3 {
 /* Tools */
 .tools-note {
   max-width: 42rem;
-  margin: 0 0 24px;
+  margin: 0 0 16px;
   color: var(--muted);
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .tools-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
-  gap: 12px;
+  gap: 10px;
 }
 
 .tool-group {
-  padding: 16px;
+  padding: 12px;
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   background: var(--white);
@@ -552,7 +552,7 @@ h3 {
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   color: var(--muted);
   font-family: var(--sans);
   font-size: 12px;
@@ -571,7 +571,7 @@ h3 {
 
 .tool-list {
   display: grid;
-  gap: 8px;
+  gap: 4px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -582,7 +582,7 @@ h3 {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 16px;
+  padding: 9px 12px;
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   background: var(--white);
@@ -590,7 +590,7 @@ h3 {
 
 .tool-card-body {
   display: grid;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
 }
 
@@ -598,13 +598,13 @@ h3 {
   color: var(--ink);
   font-size: 14px;
   font-weight: 500;
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 .tool-card-body span {
   color: var(--muted);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 .tool-card-state {
